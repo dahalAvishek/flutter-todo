@@ -1,4 +1,4 @@
-import 'package:english_words/english_words.dart';
+// import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -62,8 +62,8 @@ class MyAppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteTodoFromList(List<Todo> todos, int index) {
-    todos.removeAt(index);
+  void deleteTodoFromList(List<Todo> todos, Todo todo) {
+    todos.remove(todo);
   }
 
   void addCompletedTodos(int index) {
@@ -96,36 +96,21 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
-        body: Column(
-          children: [
-            Expanded(
-              child: Container(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: page,
-              ),
-            ),
-            SafeArea(
-              child: NavigationRail(
-                extended: true,
-                destinations: [
-                  NavigationRailDestination(
-                    icon: Icon(Icons.view_list),
-                    label: Text('Todos....'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.done),
-                    label: Text('Completed....'),
-                  ),
-                ],
-                selectedIndex: selectedIndex,
-                onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
-                },
-              ),
-            ),
+        appBar: AppBar(
+          title: const Text("Avishek todos app"),
+        ),
+        body: Center(child: page),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Todos'),
+            BottomNavigationBarItem(icon: Icon(Icons.done), label: 'Completed')
           ],
+          currentIndex: selectedIndex,
+          onTap: (value) {
+            setState(() {
+              selectedIndex = value;
+            });
+          },
         ),
       );
     });
@@ -135,8 +120,38 @@ class _MyHomePageState extends State<MyHomePage> {
 class TodosPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("TodosPage"),
+    var appState = context.watch<MyAppState>();
+
+    return Column(
+      children: [
+        TextField(
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Enter new todo',
+          ),
+        ),
+        // ListView(
+        //   children: [
+        //     Padding(
+        //       padding: const EdgeInsets.all(20),
+        //       child: Text('You have ${appState.todos.length} todos'),
+        //     ),
+        //     for (var todo in appState.todos)
+        //       Row(
+        //         mainAxisSize: MainAxisSize.min,
+        //         children: [
+        //           ElevatedButton.icon(
+        //             onPressed: () {
+        //               appState.deleteTodoFromList(appState.todos, todo);
+        //             },
+        //             icon: Icon(Icons.done),
+        //             label: Text(todo.todo),
+        //           ),
+        //         ],
+        //       )
+        //   ],
+        // ),
+      ],
     );
   }
 }
