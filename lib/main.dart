@@ -59,17 +59,19 @@ class MyAppState extends ChangeNotifier {
     todos.isEmpty ? newId = 0 : newId = todos.length;
     Todo newTodo = todoManager.createTodo(newId, inputString);
     todos.add(newTodo);
+    print("input string ${todos.length}");
     notifyListeners();
   }
 
   void deleteTodoFromList(List<Todo> todos, Todo todo) {
     todos.remove(todo);
+    notifyListeners();
   }
 
-  void addCompletedTodos(int index) {
-    var completedTodo = todos.elementAt(index);
-    completedTodos.add(completedTodo);
-    todos.remove(completedTodo);
+  void addCompletedTodos(Todo todo) {
+    completedTodos.add(todo);
+    todos.remove(todo);
+    notifyListeners();
   }
 }
 
@@ -82,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    // var appState = context.watch<MyAppState>();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -117,41 +119,77 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class TodosPage extends StatelessWidget {
+class TodosPage extends StatefulWidget {
+  @override
+  State<TodosPage> createState() => _TodosPageState();
+}
+
+class _TodosPageState extends State<TodosPage> {
+  final myController = TextEditingController();
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-
-    return Column(
-      children: [
-        TextField(
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Enter new todo',
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Flexible(
+                child: TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.all(10.0),
+                    hintText: 'Enter new todo',
+                  ),
+                  controller: myController,
+                ),
+              ),
+              SizedBox(
+                width: 10.0,
+              ),
+              OutlinedButton(
+                onPressed: () {
+                  appState.addTodo(myController.text);
+                  myController.text = '';
+                },
+                child: Icon(Icons.add),
+              ),
+            ],
           ),
-        ),
-        // ListView(
-        //   children: [
-        //     Padding(
-        //       padding: const EdgeInsets.all(20),
-        //       child: Text('You have ${appState.todos.length} todos'),
-        //     ),
-        //     for (var todo in appState.todos)
-        //       Row(
-        //         mainAxisSize: MainAxisSize.min,
-        //         children: [
-        //           ElevatedButton.icon(
-        //             onPressed: () {
-        //               appState.deleteTodoFromList(appState.todos, todo);
-        //             },
-        //             icon: Icon(Icons.done),
-        //             label: Text(todo.todo),
-        //           ),
-        //         ],
-        //       )
-        //   ],
-        // ),
-      ],
+          Expanded(
+            child: ListView(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text('You have ${appState.todos.length} todos'),
+                ),
+                for (var todo in appState.todos)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          appState.addCompletedTodos(todo);
+                          appState.deleteTodoFromList(appState.todos, todo);
+                        },
+                        icon: Icon(Icons.done),
+                        label: Text(todo.todo),
+                      ),
+                    ],
+                  )
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }
@@ -159,8 +197,30 @@ class TodosPage extends StatelessWidget {
 class CompletedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("Completed Page"),
+    var appState = context.watch<MyAppState>();
+
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+              'You have ${appState.completedTodos.length} completed todos'),
+        ),
+        for (var todo in appState.completedTodos)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.addCompletedTodos(todo);
+                  appState.deleteTodoFromList(appState.todos, todo);
+                },
+                icon: Icon(Icons.done),
+                label: Text(todo.todo),
+              ),
+            ],
+          )
+      ],
     );
   }
 }
