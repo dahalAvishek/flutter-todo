@@ -136,11 +136,11 @@ class _TodosPageState extends State<TodosPage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        children: [
-          Row(
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(5.0),
+          child: Row(
             children: [
               Flexible(
                 child: TextField(
@@ -153,43 +153,71 @@ class _TodosPageState extends State<TodosPage> {
                 ),
               ),
               SizedBox(
-                width: 10.0,
+                width: 5.0,
               ),
-              OutlinedButton(
-                onPressed: () {
-                  appState.addTodo(myController.text);
-                  myController.text = '';
-                },
-                child: Icon(Icons.add),
+              SizedBox(
+                height: 48,
+                child: FilledButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onPressed: () {
+                    appState.addTodo(myController.text);
+                    myController.text = '';
+                  },
+                  child: Icon(Icons.add),
+                ),
               ),
             ],
           ),
-          Expanded(
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text('You have ${appState.todos.length} todos'),
+        ),
+        Expanded(
+          child: ListView(
+            children: [
+              Container(
+                decoration: BoxDecoration(border: Border(bottom: BorderSide())),
+                padding: const EdgeInsets.fromLTRB(10, 5, 5, 10),
+                child: Text('You have ${appState.todos.length} todos',
+                    style: TextStyle(color: Colors.lightBlue, fontSize: 15)),
+              ),
+              for (var todo in appState.todos)
+                Dismissible(
+                  background: Container(
+                    color: Colors.green,
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.all(5.0),
+                    child: Icon(Icons.done, color: Colors.white),
+                  ),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.all(5.0),
+                    child: Icon(Icons.delete, color: Colors.white),
+                  ),
+                  direction: DismissDirection.horizontal,
+                  key: Key(todo.id.toString()),
+                  onDismissed: (direction) => {
+                    if (direction == DismissDirection.startToEnd)
+                      {appState.addCompletedTodos(todo)}
+                    else if (direction == DismissDirection.endToStart)
+                      {appState.deleteTodoFromList(appState.todos, todo)}
+                  },
+                  child: Container(
+                    decoration:
+                        BoxDecoration(border: Border(bottom: BorderSide())),
+                    child: ListTile(
+                      title: Text(todo.todo,
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.w500)),
+                    ),
+                  ),
                 ),
-                for (var todo in appState.todos)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          appState.addCompletedTodos(todo);
-                          appState.deleteTodoFromList(appState.todos, todo);
-                        },
-                        icon: Icon(Icons.done),
-                        label: Text(todo.todo),
-                      ),
-                    ],
-                  )
-              ],
-            ),
-          )
-        ],
-      ),
+            ],
+          ),
+        )
+      ],
     );
   }
 }
@@ -201,24 +229,40 @@ class CompletedPage extends StatelessWidget {
 
     return ListView(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
+        Container(
+          decoration: BoxDecoration(border: Border(bottom: BorderSide())),
+          padding: const EdgeInsets.fromLTRB(5, 10, 5, 5),
           child: Text(
-              'You have ${appState.completedTodos.length} completed todos'),
+              'You have ${appState.completedTodos.length} completed todos',
+              style: TextStyle(color: Colors.lightBlue, fontSize: 15)),
         ),
         for (var todo in appState.completedTodos)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () {
-                  appState.addCompletedTodos(todo);
-                  appState.deleteTodoFromList(appState.todos, todo);
-                },
-                icon: Icon(Icons.done),
-                label: Text(todo.todo),
+          Dismissible(
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.all(5.0),
+              child: Icon(Icons.delete, color: Colors.white),
+            ),
+            secondaryBackground: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: EdgeInsets.all(5.0),
+              child: Icon(Icons.delete, color: Colors.white),
+            ),
+            direction: DismissDirection.horizontal,
+            key: Key(todo.id.toString()),
+            onDismissed: (direction) => {
+              {appState.deleteTodoFromList(appState.completedTodos, todo)}
+            },
+            child: Container(
+              decoration: BoxDecoration(border: Border(bottom: BorderSide())),
+              child: ListTile(
+                title: Text(todo.todo,
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.w500)),
               ),
-            ],
+            ),
           )
       ],
     );
